@@ -1,13 +1,11 @@
 <div class="min-h-screen bg-slate-950 flex flex-col font-sans text-white">
 
   <nav class="fixed top-0 left-0 w-full p-4 flex items-center justify-between border-b border-slate-900 bg-slate-950/80 backdrop-blur-sm z-50">
-
-    <div class="flex items-center gap-2 cursor-pointer">
+    <div class="flex items-center gap-2 cursor-pointer" (click)="currentState = 'JOIN'">
       <h1 class="text-xl font-black tracking-tighter">
         Jesty<span class="text-blue-600">Quiz</span>
       </h1>
     </div>
-
     <button
       (click)="onHostLogin()"
       class="px-5 py-2 text-sm font-bold text-slate-300 border border-slate-800 rounded-full hover:text-white hover:border-slate-600 hover:bg-slate-900 transition-all"
@@ -18,32 +16,17 @@
 
   <main class="flex-1 w-full flex flex-col items-center justify-center p-4">
 
-    <div class="w-full max-w-sm bg-slate-900 p-8 rounded-2xl shadow-2xl border border-slate-800 animate-fade-in">
+    @if (currentState === 'JOIN') {
+      <app-join-game (pinEntered)="onPinEntered($event)"></app-join-game>
+    }
 
-      <h2 class="text-2xl font-bold text-center mb-6">Join Game</h2>
+    @if (currentState === 'NAME') {
+      <app-enter-name (nameEntered)="onNameEntered($event)"></app-enter-name>
+    }
 
-      <div class="flex flex-col gap-5">
-
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">
-            Game PIN
-          </label>
-          <input
-            type="text"
-            [(ngModel)]="gamePin"
-            placeholder="0000"
-            class="w-full bg-slate-950 border-2 border-slate-800 text-white text-3xl font-black text-center py-4 rounded-xl focus:outline-none focus:border-blue-600 transition-colors tracking-[0.5em]"
-          />
-        </div>
-
-        <button
-          class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all"
-        >
-          ENTER
-        </button>
-
-      </div>
-    </div>
+    @if (currentState === 'LOBBY') {
+      <app-game-lobby [username]="username"></app-game-lobby>
+    }
 
   </main>
 

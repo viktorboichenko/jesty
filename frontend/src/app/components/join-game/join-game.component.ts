@@ -1,14 +1,16 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Output, inject, signal } from '@angular/core'; // 1. Import signal
 import { FormsModule } from '@angular/forms';
+import { GameService } from '../../services/game.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-join-game',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
     <div class="w-full max-w-sm bg-slate-900 p-8 rounded-2xl shadow-2xl border border-slate-800 animate-fade-in">
       <h2 class="text-2xl font-bold text-center mb-6">Join Game</h2>
+
       <div class="flex flex-col gap-5">
         <div>
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Game PIN</label>
@@ -16,24 +18,67 @@ import { FormsModule } from '@angular/forms';
             type="text"
             [(ngModel)]="pin"
             (keyup.enter)="onSubmit()"
+            [disabled]="isLoading()"
             placeholder="0000"
-            class="w-full bg-slate-950 border-2 border-slate-800 text-white text-3xl font-black text-center py-4 rounded-xl focus:outline-none focus:border-blue-600 transition-colors tracking-[0.5em]"
+            class="w-full bg-slate-950 border-2 border-slate-800 text-white text-3xl font-black text-center py-4 rounded-xl focus:outline-none focus:border-blue-600 transition-colors tracking-[0.5em] disabled:opacity-50"
           />
         </div>
-        <button (click)="onSubmit()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all">
-          ENTER PIN
+
+        <button
+          (click)="onSubmit()"
+          [disabled]="isLoading()"
+          class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex justify-center"
+        >
+          @if (isLoading()) {
+            <span>CHECKING...</span>
+          } @else {
+            <span>ENTER PIN</span>
+          }
         </button>
+
+        @if (errorMessage()) {
+          <p class="text-red-400 text-center text-sm font-bold bg-red-900/20 p-2 rounded animate-fade-in">
+            {{ errorMessage() }}
+          </p>
+        }
+
       </div>
     </div>
-  `,
-  styles: []
+  `
 })
 export class JoinGameComponent {
   pin = '';
+  isLoading = signal(false);
+  errorMessage = signal('');
+
   @Output() pinEntered = new EventEmitter<string>();
 
+  private gameService = inject(GameService);
+
   onSubmit() {
-    console.log("Button Clicked. Pin is:", this.pin);
-    if (this.pin.length > 0) this.pinEntered.emit(this.pin);
+    if (this.pin.length === 0) return;
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.gameService.checkRoom(this.pin)
+      .pipe(
+        // 2. FINALIZE: This runs when the stream is done (Success OR Error)
+        finalize(() => this.isLoading.set(false))
+      )
+      .subscribe({
+        next: (response) => {
+          console.log("Room Found:", response);
+          this.pinEntered.emit(this.pin);
+        },
+        error: (err) => {
+          console.error("API Error:", err);
+          if (err.status === 404) {
+            this.errorMessage.set("Game not found. Check your PIN.");
+          } else {
+            this.errorMessage.set("Connection failed. Please try again.");
+          }
+        }
+      });
   }
 }

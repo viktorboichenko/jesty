@@ -1,6 +1,8 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { GameService } from '../../services/game.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-enter-name',
@@ -16,23 +18,58 @@ import { FormsModule } from '@angular/forms';
             type="text"
             [(ngModel)]="username"
             (keyup.enter)="onSubmit()"
+            [disabled]="isLoading()"
             placeholder="CoolPlayer"
             class="w-full bg-slate-950 border-2 border-slate-800 text-white text-2xl font-bold text-center py-4 rounded-xl focus:outline-none focus:border-green-500 transition-colors"
           />
         </div>
-        <button (click)="onSubmit()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-900/20 active:scale-95 transition-all">
-          JOIN LOBBY
+        <button
+            (click)="onSubmit()"
+            [disabled]="isLoading()"
+            class="w-full bg-green-600 hover:bg-green-500 disabled:bg-slate-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-900/20 active:scale-95 transition-all">
+           @if (isLoading()) { <span>JOINING...</span> } @else { <span>JOIN LOBBY</span> }
         </button>
+        @if (errorMessage()) {
+          <p class="text-red-400 text-center text-sm font-bold bg-red-900/20 p-2 rounded animate-fade-in">
+            {{ errorMessage() }}
+          </p>
+        }
       </div>
     </div>
   `,
   styles: []
 })
 export class EnterNameComponent {
+  private gameService = inject(GameService);
+
   username = '';
-  @Output() nameEntered = new EventEmitter<string>();
+  isLoading = signal(false);
+  errorMessage = signal('');
+  gamePin = input.required<string>();
+  nameEntered = output<string>();
 
   onSubmit() {
-    if (this.username.length > 0) this.nameEntered.emit(this.username);
+    if (!this.username) return;
+
+    this.isLoading.set(true);
+
+    this.gameService.enterRoom(this.gamePin(), this.username)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: (response) => {
+          console.log("Joined successfully:", response);
+          this.nameEntered.emit(this.username);
+        },
+        error: (err) => {
+          console.error("Failed to join:", err);
+          if (err.status === 404) {
+            this.errorMessage.set("Game PIN not found.");
+          } else if (err.status === 409) {
+            this.errorMessage.set("That username is already taken!");
+          } else {
+            this.errorMessage.set(err.error || "Connection failed.");
+          }
+        }
+      });
   }
 }

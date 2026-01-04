@@ -21,7 +21,7 @@
     }
 
     @if (currentState === 'NAME') {
-      <app-enter-name (nameEntered)="onNameEntered($event)"></app-enter-name>
+      <app-enter-name [gamePin]="gamePin" (nameEntered)="onNameEntered($event)"></app-enter-name>
     }
 
     @if (currentState === 'LOBBY') {

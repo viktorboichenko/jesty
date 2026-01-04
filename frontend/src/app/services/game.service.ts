@@ -13,4 +13,13 @@ export class GameService {
     const url = `${this.apiUrl}/games/${pin}`;
     return this.http.get(url);
   }
+
+  enterRoom(pin: string, username: string): Observable<any> {
+    const url = `${this.apiUrl}/games/${pin}/players`;
+    const payload = {
+      pin: pin,
+      username: username
+    }
+    return this.http.post(url, payload);
+  }
 }

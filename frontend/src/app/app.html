@@ -25,7 +25,15 @@
     }
 
     @if (currentState === 'LOBBY') {
-      <app-game-lobby [username]="username"></app-game-lobby>
+      <app-game-lobby
+        [username]="username"
+        [pin]="gamePin"
+        (questionAsked)="onQuestitonAsked($event)">
+      </app-game-lobby>
+    }
+
+    @if (currentState === 'QUESTION') {
+      <h2>GAME</h2>
     }
 
   </main>

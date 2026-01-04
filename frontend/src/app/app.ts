@@ -8,7 +8,7 @@ import { EnterNameComponent } from './components/enter-name/enter-name.component
 import { GameLobbyComponent } from './components/game-lobby/game-lobby.component';
 import {FormsModule} from '@angular/forms';
 
-type GameState = 'JOIN' | 'NAME' | 'LOBBY';
+type GameState = 'JOIN' | 'NAME' | 'LOBBY' | 'QUESTION';
 
 @Component({
   selector: 'app-root',
@@ -39,5 +39,10 @@ export class App {
 
   onHostLogin() {
     console.log("Host login clicked");
+  }
+
+  onQuestitonAsked($event: any) {
+    console.log(`Game started`, $event);
+    this.currentState = 'QUESTION';
   }
 }

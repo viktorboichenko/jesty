@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, inject, signal } from '@angular/core'; // 1. Import signal
+import { Component, output, inject, signal} from '@angular/core'; // 1. Import signal
 import { FormsModule } from '@angular/forms';
 import { GameService } from '../../services/game.service';
 import { finalize } from 'rxjs';
@@ -29,11 +29,7 @@ import { finalize } from 'rxjs';
           [disabled]="isLoading()"
           class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex justify-center"
         >
-          @if (isLoading()) {
-            <span>CHECKING...</span>
-          } @else {
-            <span>ENTER PIN</span>
-          }
+          @if (isLoading()) { <span>CHECKING...</span> } @else { <span>ENTER PIN</span> }
         </button>
 
         @if (errorMessage()) {
@@ -51,7 +47,7 @@ export class JoinGameComponent {
   isLoading = signal(false);
   errorMessage = signal('');
 
-  @Output() pinEntered = new EventEmitter<string>();
+  pinEntered = output<string>();
 
   private gameService = inject(GameService);
 

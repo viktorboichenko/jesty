@@ -27,7 +27,7 @@ import { finalize } from 'rxjs';
         <button
           (click)="onSubmit()"
           [disabled]="isLoading()"
-          class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex justify-center"
+          class="w-full bg-purple-400 hover:bg-purple-500 disabled:bg-slate-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex justify-center"
         >
           @if (isLoading()) { <span>CHECKING...</span> } @else { <span>ENTER PIN</span> }
         </button>
